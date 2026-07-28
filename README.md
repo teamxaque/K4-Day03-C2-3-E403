@@ -1,4 +1,12 @@
 # 🏫 BÀI LAB 3: CHATBOT VS REACT AGENT - TỪ Ý TƯỞNG ĐẾN THỰC THI
+**Team:** C2-3 E403  
+**Thông tin thành viên:**  
+| STT | Họ và tên | Mã sinh viên | Vai trò |
+|---|---:|---:|---:|
+| 1 | Nguyễn Trung Hiếu | 01620 | Role 4, 5 |
+| 2 | Lê Khả Chính | 01852 | Role 1 |
+| 3 | Sái Hồng Anh | 01018 | Role 2 |
+| 4 | Tô Minh Quân | 01680 | Role 3 |
 
 ---
 

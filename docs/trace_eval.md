@@ -26,7 +26,7 @@
 ### 🧠 ReAct Agent:
 * **Thought 1**: Cần xác minh đơn hàng #DH7789 có tồn tại và lấy ngày mua thực tế.
 * **Action 1**: `lookup_order['DH7789']`
-* **Observation 1**: `Đơn hàng: Giày Sneaker XYZ, ngày giao 10 ngày trước, trạng thái: đã giao thành công.`
+* **Observation 1**: Đơn hàng: Giày Sneaker XYZ, ngày giao 10 ngày trước, trạng thái: đã giao thành công.
 * **Thought 2**: Cần kiểm tra chính sách đổi trả riêng cho danh mục giày và lỗi "keo dán đế".
 * **Action 2**: `check_return_policy['category=giày', 'reason=lỗi sản xuất']`
 * **Observation 2**: Giày: đổi trả trong 15 ngày nếu lỗi nhà sản xuất, cần ảnh minh chứng
