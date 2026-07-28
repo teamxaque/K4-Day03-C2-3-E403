@@ -46,4 +46,191 @@ Chúc anh/chị một ngày thật nhiều niềm vui ạ!"
 * **Final Answer**: "Đơn #DH7789 vẫn còn trong thời hạn đổi trả (15 ngày với lỗi sản xuất). Bạn vui lòng gửi 2-3 ảnh phần đế bị lỗi keo để mình tạo yêu cầu đổi trả ngay nhé!"
 * **Nhận xét**: Xác minh dữ liệu thật, áp đúng chính sách theo danh mục, và chủ động dẫn dắt bước tiếp theo thay vì đẩy việc cho khách tự tìm hiểu.
 
-3
+## 3. TEST AGENT
+--- DEMO 2: CHẠY TRÊN REACT AGENT ---
+============================================================
+Question:
+Tôi (Customer Phone 0901234567) mua áo khoác đơn OrderID #DH001 cách đây 5 ngày, size không vừa, tôi muốn đổi size lớn hơn.
+============================================================
+
+------ Step 1 ------
+Thought: Tôi cần tra cứu thông tin đơn hàng DH001 với số điện thoại 0901234567 để xác nhận sản phẩm và ngày giao hàng của khách hàng.
+Action: lookup_order
+Action Input: {"order_id": "DH001", "customer_phone": "0901234567"}
+
+Observation
+{
+  "success": true,
+  "message": "Tra cứu đơn hàng thành công.",
+  "data": {
+    "order": {
+      "order_id": "DH001",
+      "customer_name": "Nguyễn Văn An",
+      "status": "delivered",
+      "created_at": "2026-07-23",
+      "delivered_at": "2026-07-25",
+      "items": [
+        {
+          "item_id": "SP001",
+          "product_name": "Tai nghe Bluetooth",
+          "category": "dien_tu",
+          "quantity": 1,
+          "unit_price": 550000
+        },
+        {
+          "item_id": "SP002",
+          "product_name": "Áo sơ mi nam",
+          "category": "thoi_trang",
+          "quantity": 2,
+          "unit_price": 350000
+        }
+      ]
+    }
+  }
+}
+
+------ Step 2 ------
+Thought: Khách hàng báo mua "áo khoác" trong đơn hàng DH001, nhưng kết quả tra cứu đơn hàng DH001 chỉ có "Tai nghe Bluetooth" (SP001) và "Áo sơ mi nam" (SP002). Tôi cần kiểm tra chính sách đổi trả của danh mục "thoi_trang" (thời trang) để nắm rõ quy định trước khi tư vấn hoặc xử lý tiếp cho khách hàng về sản phẩm thời trang này.
+Action: check_return_policy
+Action Input: {"category": "thoi_trang"}
+
+Observation
+{
+  "success": true,
+  "message": "Tra cứu chính sách thành công.",
+  "data": {
+    "category": "thoi_trang",
+    "policy": {
+      "return_window_days": 14,
+      "allow_refund": true,
+      "require_original_packaging": false,
+      "description": "Sản phẩm thời trang được đổi trả trong 14 ngày. Sản phẩm chưa qua giặt và còn nguyên tem."
+    }
+  }
+}
+
+------ Step 3 ------
+Thought: Tôi đã có đủ thông tin để trả lời.
+
+Final Answer: Chào anh/chị, qua kiểm tra hệ thống với số điện thoại **0901234567** và mã đơn hàng **#DH001** (giao ngày 25/07/2026), em nhận thấy đơn hàng của mình gồm có 2 sản phẩm:
+1. **Tai nghe Bluetooth** (SP001)
+2. **Áo sơ mi nam** (SP002)
+
+Trong đơn hàng này không có sản phẩm **"áo khoác"** như anh/chị đề cập. Anh/chị vui lòng kiểm tra lại giúp em:
+- Liệu sản phẩm anh/chị muốn đổi size có phải là **Áo sơ mi nam (SP002)** không ạ?
+- Hoặc anh/chị có nhầm lẫn mã đơn hàng khác không?
+
+**Thông tin thêm đến anh/chị:** Theo chính sách của cửa hàng, các sản phẩm thuộc danh mục Thời trang được hỗ trợ đổi trả trong vòng **14 ngày** kể từ ngày giao hàng thành công (đơn hàng của mình mới giao được 5 ngày nên vẫn hoàn toàn trong hạn hỗ trợ), với điều kiện sản phẩm chưa qua giặt và còn nguyên tem mác.
+
+Ngay khi anh/chị xác nhận lại đúng thông tin sản phẩm/mã đơn hàng, em sẽ hỗ trợ tạo yêu cầu đổi size cho mình ngay nhé!   
+
+===== FINAL ANSWER =====
+Chào anh/chị, qua kiểm tra hệ thống với số điện thoại **0901234567** và mã đơn hàng **#DH001** (giao ngày 25/07/2026), em nhận thấy đơn hàng của mình gồm có 2 sản phẩm:
+1. **Tai nghe Bluetooth** (SP001)
+2. **Áo sơ mi nam** (SP002)
+
+Trong đơn hàng này không có sản phẩm **"áo khoác"** như anh/chị đề cập. Anh/chị vui lòng kiểm tra lại giúp em:
+- Liệu sản phẩm anh/chị muốn đổi size có phải là **Áo sơ mi nam (SP002)** không ạ?
+- Hoặc anh/chị có nhầm lẫn mã đơn hàng khác không?
+
+**Thông tin thêm đến anh/chị:** Theo chính sách của cửa hàng, các sản phẩm thuộc danh mục Thời trang được hỗ trợ đổi trả trong vòng **14 ngày** kể từ ngày giao hàng thành công (đơn hàng của mình mới giao được 5 ngày nên vẫn hoàn toàn trong hạn hỗ trợ), với điều kiện sản phẩm chưa qua giặt và còn nguyên tem mác.
+
+Ngay khi anh/chị xác nhận lại đúng thông tin sản phẩm/mã đơn hàng, em sẽ hỗ trợ tạo yêu cầu đổi size cho mình ngay nhé!
+
+============================================================
+Question:
+Tôi mua Nồi chiên không dầu #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi chỉ may, muốn đổi trả.
+============================================================
+
+------ Step 1 ------
+Thought: Khách hàng chưa cung cấp số điện thoại và mã đơn hàng cụ thể (mã #DH002 có thể là mã đơn hàng hoặc mã sản phẩm, nhưng vẫn thiếu số điện thoại để tra cứu). Theo quy tắc an toàn, tôi cần yêu cầu khách hàng cung cấp đầy đủ thông tin này trước khi thực hiện tra cứu.
+
+Final Answer: Chào bạn, để có thể tra cứu thông tin đơn hàng và hỗ trợ bạn tốt nhất về việc đổi trả sản phẩm "Nồi chiên không dầu", bạn vui lòng cung cấp thêm các thông tin sau giúp mình nhé:
+
+1. **Số điện thoại** bạn đã dùng để đặt hàng.
+2. Xác nhận giúp mình **#DH002** là mã đơn hàng của bạn hay là mã sản phẩm?
+
+Ngay khi nhận được thông tin từ bạn, mình sẽ kiểm tra chính sách và hỗ trợ bạn các bước tiếp theo!
+
+===== FINAL ANSWER =====
+Chào bạn, để có thể tra cứu thông tin đơn hàng và hỗ trợ bạn tốt nhất về việc đổi trả sản phẩm "Nồi chiên không dầu", bạn vui lòng cung cấp thêm các thông tin sau giúp mình nhé:
+
+1. **Số điện thoại** bạn đã dùng để đặt hàng.
+2. Xác nhận giúp mình **#DH002** là mã đơn hàng của bạn hay là mã sản phẩm?
+
+Ngay khi nhận được thông tin từ bạn, mình sẽ kiểm tra chính sách và hỗ trợ bạn các bước tiếp theo!
+============================================================
+Question:
+Tôi mua Nồi chiên không dầu có đơn #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi không nấu cơm được, muốn đổi trả. Số điện thoại của tôi là 0912345678
+============================================================
+
+------ Step 1 ------
+Thought: Tôi cần tra cứu thông tin đơn hàng DH002 với số điện thoại 0912345678 để kiểm tra thông tin sản phẩm và ngày giao hàng thực tế.
+Action: lookup_order
+Action Input: {"order_id": "DH002", "customer_phone": "0912345678"}
+
+Observation
+{
+  "success": true,
+  "message": "Tra cứu đơn hàng thành công.",
+  "data": {
+    "order": {
+      "order_id": "DH002",
+      "customer_name": "Trần Thị Bình",
+      "status": "shipping",
+      "created_at": "2026-07-26",
+      "delivered_at": null,
+      "items": [
+        {
+          "item_id": "SP003",
+          "product_name": "Nồi chiên không dầu",
+          "category": "gia_dung",
+          "quantity": 1,
+          "unit_price": 1800000
+        }
+      ]
+    }
+  }
+}
+
+------ Step 2 ------
+Thought: Đơn hàng DH002 của khách hàng hiện đang có trạng thái "shipping" (đang giao hàng) và chưa có ngày giao hàng thực tế (delivered_at: null). Khách hàng báo đã mua từ 2 tháng trước và muốn đổi trả sản phẩm "Nồi chiên không dầu" (mã sản phẩm SP003, danh mục gia_dung) do "lỗi không nấu cơm được". Tôi cần kiểm tra chính sách đổi trả dành cho danh mục "gia_dung" để có thêm thông tin, đồng thời kiểm tra điều kiện đổi trả của đơn hàng này.
+Action: check_return_policy
+Action Input: {"category": "gia_dung"}
+
+Observation
+{
+  "success": true,
+  "message": "Tra cứu chính sách thành công.",
+  "data": {
+    "category": "gia_dung",
+    "policy": {
+      "return_window_days": 7,
+      "allow_refund": true,
+      "require_original_packaging": true,
+      "description": "Sản phẩm gia dụng được đổi trả trong 7 ngày. Phải còn đầy đủ phụ kiện đi kèm."
+    }
+  }
+}
+
+------ Step 3 ------
+Thought: Tôi cần kiểm tra xem đơn hàng DH002 với sản phẩm "Nồi chiên không dầu" (SP003) có đủ điều kiện đổi trả hay không bằng cách sử dụng công cụ check_refund_eligibility. Lý do khách hàng đưa ra là "lỗi không nấu cơm được" và tình trạng sản phẩm tạm thời xác định là đã qua sử dụng do khách mua từ trước.
+Action: check_refund_eligibility
+Action Input: {"order_id": "DH002", "customer_phone": "0912345678", "item_id": "SP003", "reason": "lỗi không nấu cơm được", "item_condition": "used"}
+
+Observation
+{
+  "success": false,
+  "message": "Đơn hàng chưa được giao.",
+  "data": {
+    "eligible": false,
+    "order_id": "DH002",
+    "item_id": "SP003"
+  }
+}
+
+------ Step 4 ------
+Thought: Tôi đã có đủ thông tin để trả lời.
+Final Answer: Chào chị Trần Thị Bình, qua kiểm tra trên hệ thống với số điện thoại 0912345678, đơn hàng #DH002 chứa sản phẩm "Nồi chiên không dầu" (SP003) hiện tại vẫn đang trong trạng thái "Đang giao hàng" (shipping) và chưa được ghi nhận giao hàng thành công.
+
+Vì đơn hàng chưa hoàn tất giao, hệ thống chưa thể tiếp nhận và xử lý yêu cầu đổi trả cho sản phẩm này. Ngoài ra, theo chính sách của ngành hàng gia dụng, thời hạn hỗ trợ đổi trả tối đa là trong vòng 7 ngày kể từ khi giao hàng thành công. Chị vui lòng kiểm tra lại thông tin đơn hàng hoặc liên hệ bộ phận vận chuyển để xác nhận lại tình trạng thực tế của đơn hàng nhé.

@@ -33,16 +33,17 @@ REACT_SYSTEM_PROMPT = """Bạn là một ReAct Agent hỗ trợ TRA CỨU ĐƠN 
 có khả năng sử dụng công cụ (Tools) để lấy dữ liệu thật thay vì tự đoán.
 
 Danh sách các công cụ bạn có thể sử dụng:
-1. lookup_order[order_id]: Tra cứu thông tin đơn hàng (sản phẩm, ngày giao, trạng thái).
-2. check_return_policy[category, reason]: Tra cứu chính sách đổi trả theo danh mục sản phẩm và lý do.
-3. check_refund_eligibility[order_id]: Kiểm tra đơn hàng có đủ điều kiện hoàn tiền/đổi trả không.
-4. create_return_request[order_id, reason]: Tạo yêu cầu đổi trả (CHƯA hoàn tất, chỉ tạo yêu cầu chờ duyệt).
-5. generate_shipping_label[order_id]: Tạo phiếu gửi hàng trả lại khi yêu cầu đổi trả đã được chấp nhận.
+1. lookup_order(order_id, customer_phone): Tra cứu thông tin đơn hàng (sản phẩm, ngày giao, trạng thái).
+2. check_return_policy(category): Tra cứu chính sách đổi trả theo danh mục sản phẩm (dien_tu, thoi_trang, gia_dung).
+3. check_refund_eligibility(order_id, customer_phone, item_id, reason, item_condition): Kiểm tra đơn hàng có đủ điều kiện hoàn tiền/đổi trả không.
+4. create_return_request(order_id, customer_phone, item_id, reason, item_condition, request_type, customer_confirmed): Tạo yêu cầu đổi trả (CHƯA hoàn tất, chỉ tạo yêu cầu chờ duyệt).
+5. generate_shipping_label(return_id, customer_phone): Tạo phiếu gửi hàng trả lại khi yêu cầu đổi trả đã được chấp nhận.
 
 QUY TẮC BẮT BUỘC: Khi trả lời, bạn PHẢI tuân theo định dạng từng dòng như sau:
 
 Thought: Suy luận của bạn về bước tiếp theo cần làm.
-Action: tên_công_cụ[tham_số]
+Action: tên_công_cụ
+Action Input: {"tên_tham_số": "giá_trị"}
 (Sau đó dừng lại chờ hệ thống trả về kết quả Observation)
 
 Khi đã có đủ thông tin để trả lời người dùng, hãy dùng định dạng:
@@ -52,13 +53,28 @@ Final Answer: Câu trả lời hoàn chỉnh cuối cùng gửi cho người dù
 QUY TẮC AN TOÀN:
 - Không tự bịa thông tin đơn hàng nếu tool không trả về kết quả.
 - Không tự xác nhận hoàn tiền/đổi trả hoàn tất; chỉ tạo yêu cầu chờ duyệt.
-- Nếu khách chưa cung cấp mã đơn hàng, phải hỏi lại trước khi tra cứu.
+- Nếu khách chưa cung cấp đủ thông tin (mã đơn hàng, số điện thoại...), phải hỏi lại trước khi tra cứu.
 
 BẮT ĐẦU:
 """
+def build_react_prompt(user_query, history):
 
+    prompt = REACT_SYSTEM_PROMPT
+    
+    prompt += f"\n\nCâu hỏi của khách hàng: {user_query}\n"
+
+    if history:
+        prompt += "\nLịch sử các bước trước đó:\n"
+        for h in history:
+            prompt += "\n"
+            prompt += h["assistant"]
+            prompt += "\n"
+            prompt += "Observation:\n"
+            prompt += str(h["observation"])
+            prompt += "\n"
+    return prompt
 # ---------------------------------------------------------------------------
 # 🛡️ GUARDRAILS CONFIGURATION (PHANH AN TOÀN)
 # ---------------------------------------------------------------------------
-MAX_ITERATIONS = 3   # Giới hạn tối đa 3 vòng lặp Thought-Action để tránh lặp vô tận
+MAX_ITERATIONS = 4   # Giới hạn tối đa 4 vòng lặp Thought-Action để tránh lặp vô tận
 TIMEOUT_SECONDS = 10  # Timeout cho mỗi lần gọi tool

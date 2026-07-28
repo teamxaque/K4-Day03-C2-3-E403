@@ -7,6 +7,8 @@ import json
 import os
 import sys
 from dotenv import load_dotenv
+import json
+import re
 
 # Đảm bảo import các module cùng thư mục src/ hoạt động mượt mà
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -19,8 +21,8 @@ if sys.stdout.encoding != 'utf-8':
         pass
 
 # Import các thành phần từ file của Role 2, Role 3 & Multi-Provider Adapter
-from tools import AVAILABLE_TOOLS, lookup_order, check_return_policy
-from prompts import CHATBOT_BASELINE_PROMPT, REACT_SYSTEM_PROMPT, MAX_ITERATIONS
+from tools import AVAILABLE_TOOLS, lookup_order, check_return_policy, check_refund_eligibility, create_return_request
+from prompts import CHATBOT_BASELINE_PROMPT, build_react_prompt, MAX_ITERATIONS
 from providers import get_llm_provider
 
 load_dotenv()
@@ -49,36 +51,92 @@ def run_baseline_chatbot(user_query: str, provider):
     response = provider.generate(user_query, system_prompt=CHATBOT_BASELINE_PROMPT)
     print(f"🤖 Chatbot trả lời:\n{response}")
 
+def parse_action(text):
+    final_match = re.search(r"Final Answer:\s*(.*)", text, re.S)
+    if final_match:
+        return "FINAL", final_match.group(1).strip()
 
-def run_react_agent(user_query: str, provider):
-    """
-    Dựng vòng lặp ReAct Agent (Thought -> Action -> Observation) có Guardrails.
-    """
-    print(f"\n🤖 [REACT AGENT] Câu hỏi: {user_query}")
-    step = 0
-    
-    while step < MAX_ITERATIONS:
-        step += 1
-        print(f"\n--- 🔄 Vòng lặp ReAct (Step {step}/{MAX_ITERATIONS}) ---")
+    action_match = re.search(r"Action:\s*(\w+)", text)
+    input_match = re.search(
+        r"Action Input:\s*(\{.*\})",
+        text,
+        re.S
+    )
+    if not action_match:
+        return None, None
         
-        if step == 1:
-            print("🧠 Thought: Câu hỏi này cần tra cứu đơn hàng.")
-            print("🛠️ Action: lookup_order['Hà Nội']")
-            
-            # Thực thi tool
-            obs = lookup_order("DH001","0901234567")
-            print(f"👁️ Observation: {obs}")
-            
-        elif step == 2:
-            print("🧠 Thought: Tôi đã có thông tin đơn hàng, giờ tôi có thể check return policy.")
-            print("🛠️ Action: check_return_policy['Hà Nội']")
-            obs = check_return_policy("Hà Nội")
-            print(f"👁️ Observation: {obs}")
-            break
-            
-    if step >= MAX_ITERATIONS:
-        print(f"🛡️ GUARDRAIL TRIGGERED: Đã đạt giới hạn tối đa {MAX_ITERATIONS} bước. Ngắt lặp an toàn!")
+    action = action_match.group(1)
+    args = {}
 
+    if input_match:
+        try:
+            args = json.loads(input_match.group(1))
+        except json.JSONDecodeError:
+            pass
+
+    return action, args
+    
+def execute_tool(action, args):
+
+    if action not in AVAILABLE_TOOLS:
+        return f"Unknown tool: {action}"
+
+    tool = AVAILABLE_TOOLS[action]
+
+    try:
+        result = tool(**args)
+        return result
+
+    except Exception as e:
+        return f"Tool Error: {e}"
+
+
+def run_react_agent(user_query, provider):
+    history = []
+    print("=" * 60)
+    print("Question:")
+    print(user_query)
+    print("=" * 60)
+    for step in range(MAX_ITERATIONS):
+        print(f"\n------ Step {step+1} ------")
+        prompt = build_react_prompt(
+            user_query,
+            history
+        )
+        response = provider.generate(prompt)
+        # nếu provider trả object thì chuyển sang string
+        if hasattr(response, "content"):
+            llm_output = response.content
+        else:
+            llm_output = str(response)
+
+        print(llm_output)
+
+        action, args = parse_action(
+            llm_output
+        )
+        if action is None:
+            print("Không parse được Action.")
+            break
+
+        if action == "FINAL":
+            print("\n===== FINAL ANSWER =====")
+            print(args)
+            return args
+        observation = execute_tool(
+            action,
+            args
+        )
+
+        print("\nObservation")
+        print(observation)
+
+        history.append({
+            "assistant": llm_output,
+            "observation": observation
+
+        })
+    print("\nĐã vượt quá số bước.")
 
 if __name__ == "__main__":
     print("==================================================")
@@ -94,10 +152,10 @@ if __name__ == "__main__":
     print(f"✅ Đã tải thành công {len(tests)} Test Cases từ config/test_cases.json\n")
     
     # Chạy thử câu test số 3
-    sample_query = tests[2]["question"]
+    sample_query = tests[7]["question"]
     
-    print("--- DEMO 1: CHẠY TRÊN CHATBOT BASELINE ---")
-    run_baseline_chatbot(sample_query, provider)
+    # print("--- DEMO 1: CHẠY TRÊN CHATBOT BASELINE ---")
+    # run_baseline_chatbot(sample_query, provider)
     
     print("\n--- DEMO 2: CHẠY TRÊN REACT AGENT ---")
     run_react_agent(sample_query, provider)
