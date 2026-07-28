@@ -6,6 +6,7 @@ Role 2: Tool & Spec Engineer
 
 import json
 from datetime import date, timedelta
+from functools import wraps
 from typing import Any
 
 
@@ -115,7 +116,20 @@ ALLOWED_REQUEST_TYPES = {
 # HELPER FUNCTIONS
 # =========================================================
 
-def _response(success: bool, message: str, **data: Any) -> str:
+class ToolInputError(ValueError):
+    """Lỗi đầu vào an toàn để trả về cho ReAct Agent."""
+
+    def __init__(self, field: str, message: str) -> None:
+        super().__init__(message)
+        self.field = field
+
+
+def _response(
+    success: bool,
+    message: str,
+    error_code: str | None = None,
+    **data: Any,
+) -> str:
     """Chuẩn hóa kết quả trả về dưới dạng JSON."""
 
     result = {
@@ -123,10 +137,88 @@ def _response(success: bool, message: str, **data: Any) -> str:
         "message": message,
     }
 
+    if error_code:
+        result["error_code"] = error_code
+
     if data:
         result["data"] = data
 
     return json.dumps(result, ensure_ascii=False, indent=2)
+
+
+def _safe_tool(func):
+    """
+    Bắt mọi lỗi tại biên của tool.
+
+    ReAct Agent luôn nhận một chuỗi JSON làm Observation, kể cả khi:
+    - Agent truyền thiếu hoặc thừa tham số.
+    - Kiểu dữ liệu đầu vào không hợp lệ.
+    - DB/API giả lập chứa dữ liệu lỗi.
+    - Có exception ngoài dự kiến trong quá trình thực thi.
+    """
+
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> str:
+        try:
+            return func(*args, **kwargs)
+        except ToolInputError as exc:
+            return _response(
+                False,
+                str(exc),
+                error_code="INVALID_INPUT",
+                tool=func.__name__,
+                field=exc.field,
+            )
+        except TypeError:
+            # Không trả chi tiết exception để tránh lộ thông tin nội bộ.
+            return _response(
+                False,
+                "Tham số gọi tool bị thiếu, thừa hoặc sai kiểu dữ liệu.",
+                error_code="INVALID_ARGUMENTS",
+                tool=func.__name__,
+            )
+        except Exception:
+            # Lưới an toàn cuối cùng: tool không được làm crash ReAct loop.
+            return _response(
+                False,
+                "Tool gặp lỗi nội bộ khi xử lý dữ liệu. Vui lòng thử lại.",
+                error_code="TOOL_EXECUTION_ERROR",
+                tool=func.__name__,
+            )
+
+    return wrapper
+
+
+def _required_text(
+    value: Any,
+    field: str,
+    *,
+    uppercase: bool = False,
+    lowercase: bool = False,
+) -> str:
+    """Kiểm tra và chuẩn hóa một tham số chuỗi bắt buộc."""
+
+    if not isinstance(value, str):
+        raise ToolInputError(
+            field,
+            f"'{field}' phải là chuỗi.",
+        )
+
+    normalized = value.strip()
+
+    if not normalized:
+        raise ToolInputError(
+            field,
+            f"'{field}' không được để trống.",
+        )
+
+    if uppercase:
+        return normalized.upper()
+
+    if lowercase:
+        return normalized.lower()
+
+    return normalized
 
 
 def _verify_order(
@@ -165,7 +257,12 @@ def _find_active_request(
 ) -> dict[str, Any] | None:
     """Kiểm tra sản phẩm đã có yêu cầu đổi trả hay chưa."""
 
-    active_statuses = {"approved", "pending", "processing"}
+    active_statuses = {
+        "approved",
+        "pending",
+        "processing",
+        "waiting_for_pickup",
+    }
 
     for request in RETURN_REQUEST_DATABASE.values():
         if (
@@ -267,6 +364,7 @@ def _evaluate_refund_eligibility(
 # 1. LOOKUP ORDER
 # =========================================================
 
+@_safe_tool
 def lookup_order(order_id: str, customer_phone: str) -> str:
     """
     Tra cứu đơn hàng từ cơ sở dữ liệu.
@@ -281,6 +379,9 @@ def lookup_order(order_id: str, customer_phone: str) -> str:
     Returns:
         str: Thông tin đơn hàng ở định dạng JSON.
     """
+
+    order_id = _required_text(order_id, "order_id", uppercase=True)
+    customer_phone = _required_text(customer_phone, "customer_phone")
 
     order, error = _verify_order(order_id, customer_phone)
 
@@ -307,6 +408,7 @@ def lookup_order(order_id: str, customer_phone: str) -> str:
 # 2. CHECK RETURN POLICY
 # =========================================================
 
+@_safe_tool
 def check_return_policy(category: str) -> str:
     """
     Kiểm tra chính sách đổi trả theo danh mục sản phẩm.
@@ -321,7 +423,7 @@ def check_return_policy(category: str) -> str:
         str: Chính sách đổi trả ở định dạng JSON.
     """
 
-    category = category.lower().strip()
+    category = _required_text(category, "category", lowercase=True)
     policy = RETURN_POLICY_DATABASE.get(category)
 
     if policy is None:
@@ -342,6 +444,7 @@ def check_return_policy(category: str) -> str:
 # 3. CHECK REFUND ELIGIBILITY
 # =========================================================
 
+@_safe_tool
 def check_refund_eligibility(
     order_id: str,
     customer_phone: str,
@@ -370,6 +473,16 @@ def check_refund_eligibility(
     Returns:
         str: Kết quả kiểm tra điều kiện ở định dạng JSON.
     """
+
+    order_id = _required_text(order_id, "order_id", uppercase=True)
+    customer_phone = _required_text(customer_phone, "customer_phone")
+    item_id = _required_text(item_id, "item_id", uppercase=True)
+    reason = _required_text(reason, "reason", lowercase=True)
+    item_condition = _required_text(
+        item_condition,
+        "item_condition",
+        lowercase=True,
+    )
 
     eligible, message, details = _evaluate_refund_eligibility(
         order_id=order_id,
@@ -405,6 +518,7 @@ def check_refund_eligibility(
 # 4. CREATE RETURN REQUEST
 # =========================================================
 
+@_safe_tool
 def create_return_request(
     order_id: str,
     customer_phone: str,
@@ -435,6 +549,27 @@ def create_return_request(
     Returns:
         str: Thông tin yêu cầu đổi trả vừa tạo.
     """
+
+    order_id = _required_text(order_id, "order_id", uppercase=True)
+    customer_phone = _required_text(customer_phone, "customer_phone")
+    item_id = _required_text(item_id, "item_id", uppercase=True)
+    reason = _required_text(reason, "reason", lowercase=True)
+    item_condition = _required_text(
+        item_condition,
+        "item_condition",
+        lowercase=True,
+    )
+    request_type = _required_text(
+        request_type,
+        "request_type",
+        lowercase=True,
+    )
+
+    if not isinstance(customer_confirmed, bool):
+        raise ToolInputError(
+            "customer_confirmed",
+            "'customer_confirmed' phải là true hoặc false.",
+        )
 
     if not customer_confirmed:
         return _response(
@@ -491,6 +626,7 @@ def create_return_request(
 # 5. GENERATE SHIPPING LABEL
 # =========================================================
 
+@_safe_tool
 def generate_shipping_label(
     return_id: str,
     customer_phone: str,
@@ -509,7 +645,8 @@ def generate_shipping_label(
         str: Thông tin nhãn vận chuyển ở định dạng JSON.
     """
 
-    return_id = return_id.upper()
+    return_id = _required_text(return_id, "return_id", uppercase=True)
+    customer_phone = _required_text(customer_phone, "customer_phone")
     request = RETURN_REQUEST_DATABASE.get(return_id)
 
     if request is None:
@@ -526,12 +663,6 @@ def generate_shipping_label(
     if error:
         return _response(False, error)
 
-    if request["status"] != "approved":
-        return _response(
-            False,
-            "Yêu cầu đổi trả chưa được phê duyệt.",
-        )
-
     # Đảm bảo gọi lại tool không tạo nhãn trùng.
     existing_label = SHIPPING_LABEL_DATABASE.get(return_id)
 
@@ -540,6 +671,12 @@ def generate_shipping_label(
             True,
             "Nhãn vận chuyển đã tồn tại.",
             shipping_label=existing_label,
+        )
+
+    if request["status"] != "approved":
+        return _response(
+            False,
+            "Yêu cầu đổi trả chưa được phê duyệt.",
         )
 
     tracking_number = (
