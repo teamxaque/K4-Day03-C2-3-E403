@@ -49,9 +49,9 @@ Chúc anh/chị một ngày thật nhiều niềm vui ạ!"
 ## 3. TEST AGENT
 **DEMO 2: CHẠY TRÊN REACT AGENT**
 **Question**  
-```
-Tôi (Customer Phone 0901234567) mua áo khoác đơn OrderID #DH001 cách đây 5 ngày, size không vừa, tôi muốn đổi size lớn hơn.```   
-
+```   
+Tôi (Customer Phone 0901234567) mua áo khoác đơn OrderID #DH001 cách đây 5 ngày, size không vừa, tôi muốn đổi size lớn hơn.
+```   
 **Trace log**
 
 ```
