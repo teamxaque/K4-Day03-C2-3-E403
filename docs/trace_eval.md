@@ -35,23 +35,12 @@ Bên cạnh việc tra cứu đơn hàng, nếu anh/chị có thêm câu hỏi n
 Chúc anh/chị một ngày thật nhiều niềm vui ạ!"
 * **Nhận xét**: Trả lời theo thẩm quyền được thiết kế trong Prompt khi không có quyền hạn truy cập cơ sở dữ liệu. Hướng dẫn được người dùng cách tra cứu theo các lựa chọn như Website/Email/hoặc liên hệ nhân viên hỗ trợ - Đẩy thông tin cho người dùng.
 
-### 🧠 ReAct Agent:
-* **Thought 1**: Cần xác minh đơn hàng #DH7789 có tồn tại và lấy ngày mua thực tế.
-* **Action 1**: `lookup_order['DH7789']`
-* **Observation 1**: Đơn hàng: Giày Sneaker XYZ, ngày giao 10 ngày trước, trạng thái: đã giao thành công.
-* **Thought 2**: Cần kiểm tra chính sách đổi trả riêng cho danh mục giày và lỗi "keo dán đế".
-* **Action 2**: `check_return_policy['category=giày', 'reason=lỗi sản xuất']`
-* **Observation 2**: Giày: đổi trả trong 15 ngày nếu lỗi nhà sản xuất, cần ảnh minh chứng
-* **Thought 3:** Đơn hàng còn trong hạn (10/15 ngày), lỗi thuộc diện được chấp nhận, nhưng cần khách cung cấp ảnh trước khi tạo yêu cầu chính thức.
-* **Final Answer**: "Đơn #DH7789 vẫn còn trong thời hạn đổi trả (15 ngày với lỗi sản xuất). Bạn vui lòng gửi 2-3 ảnh phần đế bị lỗi keo để mình tạo yêu cầu đổi trả ngay nhé!"
-* **Nhận xét**: Xác minh dữ liệu thật, áp đúng chính sách theo danh mục, và chủ động dẫn dắt bước tiếp theo thay vì đẩy việc cho khách tự tìm hiểu.
-
-## 3. TEST AGENT
+## 3. TEST REACT AGENT  
 **Question 1**  
 ```   
 Tôi (Customer Phone 0901234567) mua áo khoác đơn OrderID #DH001 cách đây 5 ngày, size không vừa, tôi muốn đổi size lớn hơn.
 ```   
-**Trace log**
+**Trace log**  
 
 ```
 ------ Step 1 ------
@@ -126,7 +115,7 @@ Trong đơn hàng này không có sản phẩm **"áo khoác"** như anh/chị �
 Ngay khi anh/chị xác nhận lại đúng thông tin sản phẩm/mã đơn hàng, em sẽ hỗ trợ tạo yêu cầu đổi size cho mình ngay nhé!   
 ```
 
-===
+===  
 **Question 2**  
 ```
 Tôi mua Nồi chiên không dầu #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi chỉ may, muốn đổi trả.
@@ -152,7 +141,7 @@ Chào bạn, để có thể tra cứu thông tin đơn hàng và hỗ trợ b�
 
 Ngay khi nhận được thông tin từ bạn, mình sẽ kiểm tra chính sách và hỗ trợ bạn các bước tiếp theo!
 ```
-===
+===  
 **Question 3**  
 ```
 Tôi mua Nồi chiên không dầu có đơn #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi không nấu cơm được, muốn đổi trả. Số điện thoại của tôi là 0912345678
