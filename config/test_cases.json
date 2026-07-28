@@ -2,31 +2,73 @@
   {
     "id": 1,
     "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Thủ đô của Việt Nam là gì?",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "question": "Chính sách đổi trả của shop áp dụng trong bao nhiêu ngày?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức/tài liệu chính sách có sẵn, không cần tra cứu đơn hàng cụ thể."
   },
   {
     "id": 2,
     "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Nêu 3 lời khuyên để học tốt lập trình.",
-    "expected_behavior": "Chatbot trả lời trực tiếp từ kiến thức có sẵn."
+    "question": "Tôi cần chuẩn bị gì khi gửi trả hàng qua bưu điện?",
+    "expected_behavior": "Trả lời bằng hướng dẫn chung (đóng gói, giữ hóa đơn...) không cần dữ liệu đơn hàng thực."
   },
   {
     "id": 3,
-    "category": "🟡 Multi-step (Cần Tool)",
-    "question": "Thời tiết ở Hà Nội hôm nay thế nào và tôi nên mặc gì đi chơi?",
-    "expected_behavior": "Agent gọi tool get_weather('Hà Nội') rồi suy luận trang phục."
+    "category": "🟡 Trung bình (1 Tool Call)",
+    "question": "Đơn hàng #DH1023 của tôi hiện đang ở đâu rồi?",
+    "expected_behavior": "Agent gọi tool tra cứu vận đơn, trả về trạng thái vận chuyển hiện tại."
   },
   {
     "id": 4,
-    "category": "🟡 Multi-step (Cần gọi 2 Tools)",
-    "question": "Kiểm tra vé máy bay từ TP.HCM đi Hà Nội ngày mai và dự báo thời tiết ở Hà Nội.",
-    "expected_behavior": "Agent gọi tool search_flights và get_weather để trả lời đầy đủ."
+    "category": "🟡 Trung bình (1 Tool Call)",
+    "question": "Sản phẩm trong đơn #DH2044 có nằm trong danh mục được đổi trả không?",
+    "expected_behavior": "Agent gọi tool kiểm tra chính sách theo danh mục sản phẩm của đơn hàng đó."
   },
   {
     "id": 5,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Tra cứu thời tiết ở thành phố Atlantis ngày 32/13/2026.",
-    "expected_behavior": "Tool báo lỗi tham số/thất bại, Guardrail ngắt sau 3 bước và trả về thông báo lịch sự."
+    "category": "🔴 Phức tạp (Multi-step Reasoning)",
+    "question": "Tôi mua áo khoác đơn #DH5567 cách đây 5 ngày, size không vừa, tôi muốn đổi size lớn hơn.",
+    "expected_behavior": "Agent: tra cứu đơn → kiểm tra chính sách đổi size → kiểm tra tồn kho size mới → tạo yêu cầu đổi hàng kèm hướng dẫn gửi trả."
+  },
+  {
+    "id": 6,
+    "category": "🔴 Phức tạp (Multi-step Reasoning)",
+    "question": "Tôi có 2 đơn hàng, muốn gộp hoàn tiền của đơn bị hủy vào đơn đang chờ thanh toán được không?",
+    "expected_behavior": "Agent tra cứu cả 2 đơn, kiểm tra chính sách hoàn tiền/gộp giao dịch, đưa ra phương án khả thi hoặc giải thích lý do không thể gộp."
+  },
+  {
+    "id": 7,
+    "category": "🟠 Edge Case - Dữ liệu không tồn tại",
+    "question": "Tra giúp tôi đơn hàng #DH9999999, tôi không nhớ rõ mua khi nào.",
+    "expected_behavior": "Tool trả về 'không tìm thấy đơn hàng', agent không bịa dữ liệu, phản hồi rõ ràng và hỏi lại thông tin xác thực khác (SĐT, email)."
+  },
+  {
+    "id": 8,
+    "category": "🟠 Edge Case - Hết hạn chính sách",
+    "question": "Tôi mua chiếc váy #DH3321 từ 2 tháng trước, giờ mới phát hiện lỗi chỉ may, muốn đổi trả.",
+    "expected_behavior": "Agent tra cứu đơn, phát hiện đã quá hạn đổi trả tiêu chuẩn, từ chối khéo léo nhưng đề xuất phương án thay thế (bảo hành/liên hệ CSKH cấp cao hơn) nếu có."
+  },
+  {
+    "id": 9,
+    "category": "🟠 Edge Case - Yêu cầu trùng lặp",
+    "question": "Cho tôi đổi trả đơn #DH4410, sản phẩm bị lỗi.",
+    "expected_behavior": "Agent tra cứu và phát hiện đơn này đã có yêu cầu đổi trả được xử lý trước đó, thông báo trạng thái hiện tại thay vì tạo yêu cầu trùng."
+  },
+  {
+    "id": 10,
+    "category": "🟠 Edge Case - Thông tin mơ hồ",
+    "question": "Tôi muốn trả 1 trong 3 món ở đơn #DH7788, cái bị lỗi ấy.",
+    "expected_behavior": "Agent tra cứu đơn thấy có 3 sản phẩm, không đủ thông tin xác định món nào lỗi → chủ động hỏi lại khách để làm rõ trước khi thao tác, không tự đoán."
+  },
+  {
+    "id": 11,
+    "category": "🟠 Edge Case - Xung đột chính sách",
+    "question": "Tôi muốn hoàn tiền chứ không muốn đổi hàng cho đơn #DH8890.",
+    "expected_behavior": "Agent kiểm tra chính sách thấy danh mục sản phẩm chỉ hỗ trợ đổi hàng, không hỗ trợ hoàn tiền trực tiếp → giải thích rõ và đề xuất phương án thay thế (đổi hàng hoặc chuyển tiếp CSKH)."
+  },
+  {
+    "id": 12,
+    "category": "⏳ Long Horizon (Đa lượt hội thoại)",
+    "question": "Lượt 1: 'Tôi muốn đổi trả sản phẩm lỗi đơn #DH1234' → Lượt 2 (sau khi được yêu cầu gửi ảnh): 'Đây là ảnh sản phẩm lỗi [đính kèm]' → Lượt 3: 'Bao giờ tôi nhận được hàng mới?'",
+    "expected_behavior": "Agent duy trì ngữ cảnh xuyên suốt nhiều lượt: nhớ đơn hàng đang xử lý, tiếp nhận ảnh minh chứng để hoàn tất yêu cầu, sau đó tra cứu thời gian giao hàng đổi mới mà không cần khách lặp lại mã đơn."
   }
 ]
