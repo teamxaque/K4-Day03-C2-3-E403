@@ -47,8 +47,7 @@ Chúc anh/chị một ngày thật nhiều niềm vui ạ!"
 * **Nhận xét**: Xác minh dữ liệu thật, áp đúng chính sách theo danh mục, và chủ động dẫn dắt bước tiếp theo thay vì đẩy việc cho khách tự tìm hiểu.
 
 ## 3. TEST AGENT
-**DEMO 2: CHẠY TRÊN REACT AGENT**
-**Question**  
+**Question 1**  
 ```   
 Tôi (Customer Phone 0901234567) mua áo khoác đơn OrderID #DH001 cách đây 5 ngày, size không vừa, tôi muốn đổi size lớn hơn.
 ```   
@@ -128,9 +127,10 @@ Ngay khi anh/chị xác nhận lại đúng thông tin sản phẩm/mã đơn h�
 ```
 
 ===
-**Question**  
+**Question 2**  
 ```
-Tôi mua Nồi chiên không dầu #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi chỉ may, muốn đổi trả.```
+Tôi mua Nồi chiên không dầu #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi chỉ may, muốn đổi trả.
+```
 
 **Trace log**
 ```
@@ -153,7 +153,7 @@ Chào bạn, để có thể tra cứu thông tin đơn hàng và hỗ trợ b�
 Ngay khi nhận được thông tin từ bạn, mình sẽ kiểm tra chính sách và hỗ trợ bạn các bước tiếp theo!
 ```
 ===
-**Question**  
+**Question 3**  
 ```
 Tôi mua Nồi chiên không dầu có đơn #DH002 từ 2 tháng trước, giờ mới phát hiện lỗi không nấu cơm được, muốn đổi trả. Số điện thoại của tôi là 0912345678
 ```
@@ -229,4 +229,5 @@ Observation
 Thought: Tôi đã có đủ thông tin để trả lời.
 Final Answer: Chào chị Trần Thị Bình, qua kiểm tra trên hệ thống với số điện thoại 0912345678, đơn hàng #DH002 chứa sản phẩm "Nồi chiên không dầu" (SP003) hiện tại vẫn đang trong trạng thái "Đang giao hàng" (shipping) và chưa được ghi nhận giao hàng thành công.
 
-Vì đơn hàng chưa hoàn tất giao, hệ thống chưa thể tiếp nhận và xử lý yêu cầu đổi trả cho sản phẩm này. Ngoài ra, theo chính sách của ngành hàng gia dụng, thời hạn hỗ trợ đổi trả tối đa là trong vòng 7 ngày kể từ khi giao hàng thành công. Chị vui lòng kiểm tra lại thông tin đơn hàng hoặc liên hệ bộ phận vận chuyển để xác nhận lại tình trạng thực tế của đơn hàng nhé.```
+Vì đơn hàng chưa hoàn tất giao, hệ thống chưa thể tiếp nhận và xử lý yêu cầu đổi trả cho sản phẩm này. Ngoài ra, theo chính sách của ngành hàng gia dụng, thời hạn hỗ trợ đổi trả tối đa là trong vòng 7 ngày kể từ khi giao hàng thành công. Chị vui lòng kiểm tra lại thông tin đơn hàng hoặc liên hệ bộ phận vận chuyển để xác nhận lại tình trạng thực tế của đơn hàng nhé.
+```
